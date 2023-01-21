@@ -24,6 +24,18 @@ bin/gke-auth-plugin version
 
 You can straight up replace the gke-cloud-auth-plugin with this binary, or place on your path and update your kubeconfig exec command to run gke-auth-plugin.
 
+### Example Exec Section of Kubeconfig
+
+```yaml
+users:
+- name: user_id
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: gke-auth-plugin
+      provideClusterInfo: true
+      interactiveMode: Never
+```
 ## TODO
 
 - Add Cache File like the gke-auth-cloud-plugin
