@@ -41,9 +41,6 @@ LDFLAGS += -X github.com/traviswt/gke-auth-plugin/pkg/conf.GitCommit=${GIT_COMMI
 .PHONY: all
 all: build
 
-# ------------------------------------------------------------------------------
-#  build
-
 build: clean tidy fmt vet test-unit compile
 
 tidy:
@@ -70,22 +67,6 @@ vet:
 	@echo
 	@echo "=== vet ==="
 	go vet ./...
-
-# Build the docker image
-docker-build:
-	@echo
-	@echo "=== docker build ==="
-	docker build -f ./Dockerfile . -t ${IMG} --build-arg VERSION --build-arg SSH_PRIVATE_KEY
-#    --progress plain
-
-# Push the docker image
-docker-push: docker-build
-	@echo
-	@echo "=== docker push ==="
-	docker push ${IMG}
-
-# ------------------------------------------------------------------------------
-#  test
 
 .PHONY: test-unit
 test-unit:
