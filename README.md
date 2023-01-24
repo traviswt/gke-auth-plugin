@@ -38,5 +38,4 @@ users:
 ```
 ## TODO
 
-- Add Cache File like the gke-auth-cloud-plugin
 - Add unit tests

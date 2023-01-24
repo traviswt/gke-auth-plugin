@@ -21,6 +21,14 @@ var (
 )
 
 func Gcp(ctx context.Context) error {
+	ec := GetExecCredential()
+	//use cached exec credential
+	if ec != nil {
+		credString := formatJSON(ec)
+		_, _ = fmt.Fprint(os.Stdout, credString)
+		return nil
+	}
+	//create new exec credential
 	cred, err := google.FindDefaultCredentials(ctx, gcpScopes...)
 	if err != nil {
 		return err
@@ -35,11 +43,21 @@ func Gcp(ctx context.Context) error {
 	if token == nil {
 		return errors.New("failed retrieving token from credentials")
 	}
-	_, _ = fmt.Fprint(os.Stdout, formatJSON(token.AccessToken, token.Expiry))
+	ec = newExecCredential(token.AccessToken, token.Expiry)
+	//cache exec credential
+	SaveExecCredential(ec)
+	credString := formatJSON(ec)
+	_, _ = fmt.Fprint(os.Stdout, credString)
 	return nil
 }
 
-func formatJSON(token string, exp time.Time) string {
+func formatJSON(ec *clientauthv1beta1.ExecCredential) string {
+	//pretty print
+	enc, _ := json.MarshalIndent(ec, "", "  ")
+	return string(enc)
+}
+
+func newExecCredential(token string, exp time.Time) *clientauthv1beta1.ExecCredential {
 	metaExp := metav1.NewTime(exp)
 	//the google token sometimes contains trailing periods,
 	//they cause problems with various tools, thus right trim
@@ -50,7 +68,7 @@ func formatJSON(token string, exp time.Time) string {
 		return false
 	})
 	clientauthv1beta1.SchemeGroupVersion.Identifier()
-	execInput := &clientauthv1beta1.ExecCredential{
+	ec := &clientauthv1beta1.ExecCredential{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: clientauthv1beta1.SchemeGroupVersion.Identifier(),
 			Kind:       "ExecCredential",
@@ -60,7 +78,5 @@ func formatJSON(token string, exp time.Time) string {
 			Token:               token,
 		},
 	}
-	//pretty print
-	enc, _ := json.MarshalIndent(execInput, "", "  ")
-	return string(enc)
+	return ec
 }
