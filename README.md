@@ -12,6 +12,13 @@ The plugin is for use outside of a cluster; when running in the cluster, mount a
 make
 ```
 
+Or with Docker
+```shell
+docker build -f Dockerfile.dev -t gke-auth-plugin-dev .
+
+docker run -it --rm --name gke-auth-plugin-dev-container -v ${PWD}:/home/nonroot gke-auth-plugin-dev
+```
+
 ## Run
 
 ```shell
