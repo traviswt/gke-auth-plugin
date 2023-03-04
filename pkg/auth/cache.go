@@ -47,7 +47,7 @@ func SaveExecCredential(ec *v1beta1.ExecCredential) {
 	_ = saveFile(cl, ec)
 }
 
-//cacheLocation returns the file to Cache the exec cred to, if blank, don't Cache
+// cacheLocation returns the file to Cache the exec cred to, if blank, don't Cache
 func cacheLocation() string {
 	cacheFileDir := ""
 	kubeconfig := os.Getenv("KUBECONFIG")

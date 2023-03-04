@@ -1,0 +1,8 @@
+FROM golang:1.20.1-bullseye
+
+RUN apt-get update -y && apt-get upgrade -y
+
+RUN groupadd --gid 1000 nonroot && useradd --uid 1000 --gid nonroot --shell /bin/bash --create-home nonroot
+
+USER nonroot
+WORKDIR /home/nonroot
