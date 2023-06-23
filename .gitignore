@@ -27,3 +27,4 @@ bin
 .env
 
 .DS_Store
+dist/
