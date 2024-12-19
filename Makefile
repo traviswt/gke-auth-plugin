@@ -1,7 +1,6 @@
-VERSION 			?= 0.1.1
-BINDIR      	:= $(CURDIR)/bin
-BINNAME     	?= gke-auth-plugin
-
+VERSION       ?= 0.2.0
+BINDIR        := $(CURDIR)/bin
+BINNAME       ?= gke-auth-plugin
 GOPATH        = $(shell go env GOPATH)
 GOIMPORTS     = $(GOPATH)/bin/goimports
 
