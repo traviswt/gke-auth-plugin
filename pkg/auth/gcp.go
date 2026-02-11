@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/oauth2/google"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientauthv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
-	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/impersonate"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientauthv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 )
 
 var (
@@ -25,7 +27,7 @@ func Gcp(ctx context.Context) error {
 	//use cached exec credential
 	if ec != nil {
 		credString := formatJSON(ec)
-		_, _ = fmt.Fprint(os.Stdout, credString)
+		fmt.Print(credString)
 		return nil
 	}
 	//create new exec credential
@@ -47,7 +49,7 @@ func Gcp(ctx context.Context) error {
 	//cache exec credential
 	SaveExecCredential(ec)
 	credString := formatJSON(ec)
-	_, _ = fmt.Fprint(os.Stdout, credString)
+	fmt.Print(credString)
 	return nil
 }
 
@@ -61,13 +63,7 @@ func newExecCredential(token string, exp time.Time) *clientauthv1beta1.ExecCrede
 	metaExp := metav1.NewTime(exp)
 	//the google token sometimes contains trailing periods,
 	//they cause problems with various tools, thus right trim
-	token = strings.TrimRightFunc(token, func(r rune) bool {
-		if r == '.' {
-			return true
-		}
-		return false
-	})
-	clientauthv1beta1.SchemeGroupVersion.Identifier()
+	token = strings.TrimSuffix(token, ".")
 	ec := &clientauthv1beta1.ExecCredential{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: clientauthv1beta1.SchemeGroupVersion.Identifier(),

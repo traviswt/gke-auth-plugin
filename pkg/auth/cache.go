@@ -2,16 +2,17 @@ package auth
 
 import (
 	"bufio"
-	"github.com/traviswt/gke-auth-plugin/pkg/conf"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
+
+	"github.com/traviswt/gke-auth-plugin/pkg/conf"
 )
 
 func GetExecCredential() *v1beta1.ExecCredential {
@@ -37,7 +38,7 @@ func GetExecCredential() *v1beta1.ExecCredential {
 
 func SaveExecCredential(ec *v1beta1.ExecCredential) {
 	doNotCache := os.Getenv("GKE_AUTH_PLUGIN_DO_NOT_CACHE")
-	if doNotCache != "" && strings.ToLower(doNotCache) == "true" {
+	if strings.ToLower(doNotCache) == "true" {
 		return
 	}
 	cl := cacheLocation()
@@ -66,7 +67,7 @@ func cacheLocation() string {
 }
 
 func loadFile(file string) (*v1beta1.ExecCredential, error) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
