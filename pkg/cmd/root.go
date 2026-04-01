@@ -6,9 +6,11 @@ import (
 	"github.com/traviswt/gke-auth-plugin/pkg/conf"
 )
 
-var impersonateServiceAccount string
-
 func GetRootCmd(args []string) *cobra.Command {
+	var (
+		impersonateServiceAccount string
+		clientAuthVersion         string
+	)
 	rootCmd := &cobra.Command{
 		Use:               conf.BinName,
 		Short:             "GKE Authentication Plugin",
@@ -17,11 +19,12 @@ func GetRootCmd(args []string) *cobra.Command {
 		SilenceErrors:     true,
 		Long:              `GKE Authentication Plugin`,
 		RunE: func(c *cobra.Command, args []string) error {
-			return auth.Gcp(c.Context(), impersonateServiceAccount)
+			return auth.Gcp(c.Context(), impersonateServiceAccount, clientAuthVersion)
 		},
 	}
 
-	rootCmd.Flags().StringVar(&impersonateServiceAccount, "impersonate_service_account", "", "Google Service Account to Impersonate")
+	rootCmd.Flags().StringVarP(&impersonateServiceAccount, "impersonate_service_account", "i", "", "Google Service Account to Impersonate")
+	rootCmd.Flags().StringVarP(&clientAuthVersion, "client_auth_version", "v", "v1", "Client Auth Version, can be 'v1beta1' or 'v1'")
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(versionCmd())
 	rootCmd.SetArgs(args)

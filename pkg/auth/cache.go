@@ -5,6 +5,7 @@ import (
 	"github.com/traviswt/gke-auth-plugin/pkg/conf"
 	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
 	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 	"os"
 	"path"
@@ -13,12 +14,12 @@ import (
 	"time"
 )
 
-func GetExecCredential() *v1beta1.ExecCredential {
+func GetExecCredentialV1Beta1() *v1beta1.ExecCredential {
 	cl := cacheLocation()
 	if cl == "" {
 		return nil
 	}
-	ec, err := loadFile(cl)
+	ec, err := loadFile[v1beta1.ExecCredential](cl)
 	if err != nil {
 		return nil
 	}
@@ -34,7 +35,28 @@ func GetExecCredential() *v1beta1.ExecCredential {
 	return ec
 }
 
-func SaveExecCredential(ec *v1beta1.ExecCredential) {
+func GetExecCredentialV1() *v1.ExecCredential {
+	cl := cacheLocation()
+	if cl == "" {
+		return nil
+	}
+	ec, err := loadFile[v1.ExecCredential](cl)
+	if err != nil {
+		return nil
+	}
+	if ec != nil {
+		if ec.Status != nil && ec.Status.ExpirationTimestamp != nil {
+			now := metav1.NewTime(time.Now())
+			if ec.Status.ExpirationTimestamp.Before(&now) {
+				deleteFile(cl)
+				return nil
+			}
+		}
+	}
+	return ec
+}
+
+func SaveExecCredential[T any](ec *T) {
 	doNotCache := os.Getenv("GKE_AUTH_PLUGIN_DO_NOT_CACHE")
 	if strings.ToLower(doNotCache) == "true" {
 		return
@@ -64,12 +86,12 @@ func cacheLocation() string {
 	return cf
 }
 
-func loadFile(file string) (*v1beta1.ExecCredential, error) {
+func loadFile[T any](file string) (*T, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	var ec v1beta1.ExecCredential
+	var ec T
 	err = yaml.Unmarshal(data, &ec)
 	if err != nil {
 		return nil, err
@@ -77,7 +99,7 @@ func loadFile(file string) (*v1beta1.ExecCredential, error) {
 	return &ec, nil
 }
 
-func saveFile(file string, ec *v1beta1.ExecCredential) error {
+func saveFile[T any](file string, ec *T) error {
 	if ec == nil {
 		return nil
 	}

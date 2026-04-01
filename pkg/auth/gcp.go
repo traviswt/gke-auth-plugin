@@ -9,6 +9,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/impersonate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientauthv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
 	clientauthv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 	"strings"
 	"time"
@@ -21,12 +22,31 @@ var (
 	}
 )
 
-func Gcp(ctx context.Context, impersonationAccount string) error {
+func Gcp(
+	ctx context.Context,
+	impersonationAccount string,
+	clientAuthVersion string,
+) error {
 	// Use cached exec credential
-	if ec := GetExecCredential(); ec != nil {
-		credString := formatJSON(ec)
-		fmt.Print(credString)
-		return nil
+	switch clientAuthVersion {
+	case "v1beta1":
+		{
+			if ec := GetExecCredentialV1Beta1(); ec != nil {
+				credString := formatJSON(ec)
+				fmt.Print(credString)
+				return nil
+			}
+		}
+	case "v1":
+		{
+			if ec := GetExecCredentialV1(); ec != nil {
+				credString := formatJSON(ec)
+				fmt.Print(credString)
+				return nil
+			}
+		}
+	default:
+		return fmt.Errorf("unknown client auth version '%s', can be 'v1beta1' or 'v1'", clientAuthVersion)
 	}
 
 	var ts oauth2.TokenSource
@@ -58,22 +78,37 @@ func Gcp(ctx context.Context, impersonationAccount string) error {
 	}
 
 	// Create ExecCredential from token
-	ec := newExecCredential(token.AccessToken, token.Expiry)
-
-	// Cache exec credential
-	SaveExecCredential(ec)
-	credString := formatJSON(ec)
-	fmt.Print(credString)
-	return nil
+	switch clientAuthVersion {
+	case "v1beta1":
+		{
+			ec := newExecCredentialV1Beta1(token.AccessToken, token.Expiry)
+			// Cache exec credential
+			SaveExecCredential(ec)
+			credString := formatJSON(ec)
+			fmt.Print(credString)
+			return nil
+		}
+	case "v1":
+		{
+			ec := newExecCredentialV1(token.AccessToken, token.Expiry)
+			// Cache exec credential
+			SaveExecCredential(ec)
+			credString := formatJSON(ec)
+			fmt.Print(credString)
+			return nil
+		}
+	default:
+		return fmt.Errorf("unknown client auth version '%s', can be 'v1beta1' or 'v1'", clientAuthVersion)
+	}
 }
 
-func formatJSON(ec *clientauthv1beta1.ExecCredential) string {
+func formatJSON(ec any) string {
 	//pretty print
 	enc, _ := json.MarshalIndent(ec, "", "  ")
 	return string(enc)
 }
 
-func newExecCredential(token string, exp time.Time) *clientauthv1beta1.ExecCredential {
+func newExecCredentialV1Beta1(token string, exp time.Time) *clientauthv1beta1.ExecCredential {
 	metaExp := metav1.NewTime(exp)
 	//the google token sometimes contains trailing periods,
 	//they cause problems with various tools, thus right trim
@@ -89,6 +124,29 @@ func newExecCredential(token string, exp time.Time) *clientauthv1beta1.ExecCrede
 			Kind:       "ExecCredential",
 		},
 		Status: &clientauthv1beta1.ExecCredentialStatus{
+			ExpirationTimestamp: &metaExp,
+			Token:               token,
+		},
+	}
+	return ec
+}
+
+func newExecCredentialV1(token string, exp time.Time) *clientauthv1.ExecCredential {
+	metaExp := metav1.NewTime(exp)
+	//the google token sometimes contains trailing periods,
+	//they cause problems with various tools, thus right trim
+	token = strings.TrimRightFunc(token, func(r rune) bool {
+		if r == '.' {
+			return true
+		}
+		return false
+	})
+	ec := &clientauthv1.ExecCredential{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: clientauthv1.SchemeGroupVersion.Identifier(),
+			Kind:       "ExecCredential",
+		},
+		Status: &clientauthv1.ExecCredentialStatus{
 			ExpirationTimestamp: &metaExp,
 			Token:               token,
 		},
