@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-
 	"github.com/traviswt/gke-auth-plugin/pkg/auth"
 	"github.com/traviswt/gke-auth-plugin/pkg/conf"
 )

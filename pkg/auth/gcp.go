@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
-	"time"
-
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/impersonate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientauthv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
+	"strings"
+	"time"
 )
 
 var (
@@ -78,7 +77,12 @@ func newExecCredential(token string, exp time.Time) *clientauthv1beta1.ExecCrede
 	metaExp := metav1.NewTime(exp)
 	//the google token sometimes contains trailing periods,
 	//they cause problems with various tools, thus right trim
-	token = strings.TrimSuffix(token, ".")
+	token = strings.TrimRightFunc(token, func(r rune) bool {
+		if r == '.' {
+			return true
+		}
+		return false
+	})
 	ec := &clientauthv1beta1.ExecCredential{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: clientauthv1beta1.SchemeGroupVersion.Identifier(),

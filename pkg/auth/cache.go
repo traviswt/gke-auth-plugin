@@ -2,17 +2,15 @@ package auth
 
 import (
 	"bufio"
+	"github.com/traviswt/gke-auth-plugin/pkg/conf"
+	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"gopkg.in/yaml.v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
-
-	"github.com/traviswt/gke-auth-plugin/pkg/conf"
 )
 
 func GetExecCredential() *v1beta1.ExecCredential {
