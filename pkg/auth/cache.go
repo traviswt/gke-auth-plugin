@@ -14,6 +14,11 @@ import (
 	"time"
 )
 
+type ExecCredentialTypes interface {
+	v1beta1.ExecCredential |
+		v1.ExecCredential
+}
+
 func GetExecCredentialV1Beta1() *v1beta1.ExecCredential {
 	cl := cacheLocation()
 	if cl == "" {
@@ -56,7 +61,7 @@ func GetExecCredentialV1() *v1.ExecCredential {
 	return ec
 }
 
-func SaveExecCredential[T any](ec *T) {
+func SaveExecCredential[T ExecCredentialTypes](ec *T) {
 	doNotCache := os.Getenv("GKE_AUTH_PLUGIN_DO_NOT_CACHE")
 	if strings.ToLower(doNotCache) == "true" {
 		return
@@ -86,7 +91,7 @@ func cacheLocation() string {
 	return cf
 }
 
-func loadFile[T any](file string) (*T, error) {
+func loadFile[T ExecCredentialTypes](file string) (*T, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -99,7 +104,7 @@ func loadFile[T any](file string) (*T, error) {
 	return &ec, nil
 }
 
-func saveFile[T any](file string, ec *T) error {
+func saveFile[T ExecCredentialTypes](file string, ec *T) error {
 	if ec == nil {
 		return nil
 	}
