@@ -1,4 +1,4 @@
-VERSION       ?= 0.4.1
+VERSION       ?= 0.5.0
 BINDIR        := $(CURDIR)/bin
 BINNAME       ?= gke-auth-plugin
 GOPATH        = $(shell go env GOPATH)
