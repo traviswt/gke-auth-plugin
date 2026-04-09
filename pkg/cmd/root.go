@@ -14,10 +14,13 @@ func GetRootCmd(args []string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:               conf.BinName,
 		Short:             "GKE Authentication Plugin",
+		Long:              `GKE Authentication Plugin`,
 		SilenceUsage:      true,
 		DisableAutoGenTag: true,
 		SilenceErrors:     true,
-		Long:              `GKE Authentication Plugin`,
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
+		},
 		RunE: func(c *cobra.Command, args []string) error {
 			return auth.Gcp(c.Context(), impersonateServiceAccount, clientAuthVersion)
 		},
