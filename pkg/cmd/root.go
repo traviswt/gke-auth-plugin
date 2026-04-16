@@ -33,7 +33,7 @@ func GetRootCmd(args []string) *cobra.Command {
 	}
 
 	rootCmd.Flags().StringVarP(&impersonateServiceAccount, "impersonate_service_account", "i", "", "Google Service Account to Impersonate")
-	rootCmd.Flags().StringVarP(&clientAuthVersion, "client_auth_version", "v", "v1", "Client Auth Version, can be 'v1beta1' or 'v1'")
+	rootCmd.Flags().StringVarP(&clientAuthVersion, "client_auth_version", "v", "v1beta1", "Client Auth Version, can be 'v1beta1' or 'v1'")
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.AddCommand(versionCmd())
 	rootCmd.SetArgs(args)
