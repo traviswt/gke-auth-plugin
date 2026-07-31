@@ -1,6 +1,6 @@
 module github.com/traviswt/gke-auth-plugin
 
-go 1.26.0
+go 1.26.5
 
 require (
 	github.com/spf13/cobra v1.10.2
