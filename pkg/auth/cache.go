@@ -62,10 +62,6 @@ func GetExecCredentialV1() *v1.ExecCredential {
 }
 
 func SaveExecCredential[T ExecCredentialTypes](ec *T) {
-	doNotCache := os.Getenv("GKE_AUTH_PLUGIN_DO_NOT_CACHE")
-	if strings.ToLower(doNotCache) == "true" {
-		return
-	}
 	cl := cacheLocation()
 	if cl == "" {
 		return
@@ -73,8 +69,17 @@ func SaveExecCredential[T ExecCredentialTypes](ec *T) {
 	_ = saveFile(cl, ec)
 }
 
-// cacheLocation returns the file to Cache the exec cred to, if blank, don't Cache
+// cachingDisabled reports whether the user opted out of caching via GKE_AUTH_PLUGIN_DO_NOT_CACHE
+func cachingDisabled() bool {
+	doNotCache := os.Getenv("GKE_AUTH_PLUGIN_DO_NOT_CACHE")
+	return strings.ToLower(strings.TrimSpace(doNotCache)) == "true"
+}
+
+// cacheLocation returns the file to Cache the exec cred to, if blank, don't Cache (neither read nor write)
 func cacheLocation() string {
+	if cachingDisabled() {
+		return ""
+	}
 	cacheFileDir := ""
 	kubeconfig := os.Getenv("KUBECONFIG")
 	if kubeconfig != "" {

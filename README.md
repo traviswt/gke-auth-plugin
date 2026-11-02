@@ -45,6 +45,3 @@ users:
       provideClusterInfo: true
       interactiveMode: Never
 ```
-## TODO
-
-- Add unit tests
